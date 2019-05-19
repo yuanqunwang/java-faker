@@ -1,9 +1,14 @@
 package com.github.javafaker;
 
+import com.github.javafaker.service.FakeSeed;
+import com.github.javafaker.service.FakeValuesInterface;
 import com.github.javafaker.service.FakeValuesService;
 import com.github.javafaker.service.RandomService;
 
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -15,75 +20,7 @@ import java.util.Random;
 public class Faker {
     private final RandomService randomService;
     private final FakeValuesService fakeValuesService;
-
-    private final Ancient ancient;
-    private final App app;
-    private final Artist artist;
-    private final Avatar avatar;
-    private final Lorem lorem;
-    private final Music music;
-    private final Name name;
-    private final Number number;
-    private final Internet internet;
-    private final PhoneNumber phoneNumber;
-    private final Pokemon pokemon;
-    private final Address address;
-    private final Business business;
-    private final Book book;
-    private final ChuckNorris chuckNorris;
-    private final Color color;
-    private final Commerce commerce;
-    private final Country country;
-    private final Currency currency;
-    private final Company company;
-    private final Crypto crypto;
-    private final IdNumber idNumber;
-    private final Hacker hacker;
-    private final Options options;
-    private final Code code;
-    private final Finance finance;
-    private final Food food;
-    private final GameOfThrones gameOfThrones;
-    private final DateAndTime dateAndTime;
-    private final Demographic demographic;
-    private final Dog dog;
-    private final Educator educator;
-    private final Shakespeare shakespeare;
-    private final SlackEmoji slackEmoji;
-    private final Space space;
-    private final Superhero superhero;
-    private final Bool bool;
-    private final Team team;
-    private final Beer beer;
-    private final University university;
-    private final Cat cat;
-    private final File file;
-    private final Stock stock;
-    private final LordOfTheRings lordOfTheRings;
-    private final Zelda zelda;
-    private final HarryPotter harryPotter;
-    private final RockBand rockBand;
-    private final Esports esports;
-    private final Friends friends;
-    private final Hipster hipster;
-    private final Job job;
-    private final TwinPeaks twinPeaks;
-    private final RickAndMorty rickAndMorty;
-    private final Yoda yoda;
-    private final Matz matz;
-    private final Witcher witcher;
-    private final DragonBall dragonBall;
-    private final FunnyName funnyName;
-    private final HitchhikersGuideToTheGalaxy hitchhikersGuideToTheGalaxy;
-    private final Hobbit hobbit;
-    private final HowIMetYourMother howIMetYourMother;
-    private final LeagueOfLegends leagueOfLegends;
-    private final Overwatch overwatch;
-    private final Robin robin;
-    private final StarTrek starTrek;
-    private final Weather weather;
-    private final Lebowski lebowski;
-    private final Medical medical;
+    private final Map<String, Object> fakeObjects;
 
     public Faker() {
         this(Locale.ENGLISH);
@@ -100,75 +37,125 @@ public class Faker {
     public Faker(Locale locale, Random random) {
         this.randomService = new RandomService(random);
         this.fakeValuesService = new FakeValuesService(locale, randomService);
+        this.fakeObjects = new HashMap<String, Object>();
+        init();
 
-        this.ancient = new Ancient(this);
-        this.app = new App(this);
-        this.artist = new Artist(this);
-        this.avatar = new Avatar(this);
-        this.lorem = new Lorem(this);
-        this.music = new Music(this);
-        this.name = new Name(this);
-        this.number = new Number(this);
-        this.internet = new Internet(this);
-        this.phoneNumber = new PhoneNumber(this);
-        this.pokemon = new Pokemon(this);
-        this.address = new Address(this);
-        this.book = new Book(this);
-        this.business = new Business(this);
-        this.chuckNorris = new ChuckNorris(this);
-        this.color = new Color(this);
-        this.idNumber = new IdNumber(this);
-        this.hacker = new Hacker(this);
-        this.company = new Company(this);
-        this.crypto = new Crypto(this);
-        this.commerce = new Commerce(this);
-        this.currency = new Currency(this);
-        this.options = new Options(this);
-        this.code = new Code(this);
-        this.file = new File(this);
-        this.finance = new Finance(this);
-        this.food = new Food(this);
-        this.gameOfThrones = new GameOfThrones(this);
-        this.dateAndTime = new DateAndTime(this);
-        this.demographic = new Demographic(this);
-        this.dog = new Dog(this);
-        this.educator = new Educator(this);
-        this.shakespeare = new Shakespeare(this);
-        this.slackEmoji = new SlackEmoji(this);
-        this.space = new Space(this);
-        this.superhero = new Superhero(this);
-        this.team = new Team(this);
-        this.bool = new Bool(this);
-        this.beer = new Beer(this);
-        this.university = new University(this);
-        this.cat = new Cat(this);
-        this.stock = new Stock(this);
-        this.lordOfTheRings = new LordOfTheRings(this);
-        this.zelda = new Zelda(this);
-        this.harryPotter = new HarryPotter(this);
-        this.rockBand = new RockBand(this);
-        this.esports = new Esports(this);
-        this.friends = new Friends(this);
-        this.hipster = new Hipster(this);
-        this.job = new Job(this);
-        this.twinPeaks = new TwinPeaks(this);
-        this.rickAndMorty = new RickAndMorty(this);
-        this.yoda = new Yoda(this);
-        this.matz = new Matz(this);
-        this.witcher = new Witcher(this);
-        this.dragonBall = new DragonBall(this);
-        this.funnyName = new FunnyName(this);
-        this.hitchhikersGuideToTheGalaxy = new HitchhikersGuideToTheGalaxy(this);
-        this.hobbit = new Hobbit(this);
-        this.howIMetYourMother = new HowIMetYourMother(this);
-        this.leagueOfLegends = new LeagueOfLegends(this);
-        this.overwatch = new Overwatch(this);
-        this.robin = new Robin(this);
-        this.starTrek = new StarTrek(this);
-        this.weather = new Weather(this);
-        this.lebowski = new Lebowski(this);
-        this.medical = new Medical(this);
-        this.country = new Country(this);
+    }
+
+
+    private void init(){
+        this.fakeObjects.put("alphaNumeric", new AlphaNumeric(randomService));
+        this.fakeObjects.put("app", new App(this));
+        this.fakeObjects.put("artist", new Artist(this));
+        this.fakeObjects.put("avatar", new Avatar(this));
+        this.fakeObjects.put("lorem", new Lorem(this));
+        this.fakeObjects.put("music", new Music(this));
+        this.fakeObjects.put("name", new Name(this));
+        this.fakeObjects.put("number", new Number(this));
+        this.fakeObjects.put("internet", new Internet(this));
+        this.fakeObjects.put("phoneNumber", new PhoneNumber(this));
+        this.fakeObjects.put("pokemon", new Pokemon(this));
+        this.fakeObjects.put("address", new Address(this));
+        this.fakeObjects.put("book", new Book(this));
+        this.fakeObjects.put("business", new Business(this));
+        this.fakeObjects.put("chuckNorris", new ChuckNorris(this));
+        this.fakeObjects.put("color", new Color(this));
+        this.fakeObjects.put("idNumber", new IdNumber(this));
+        this.fakeObjects.put("hacker", new Hacker(this));
+        this.fakeObjects.put("company", new Company(this));
+        this.fakeObjects.put("crypto", new Crypto(this));
+        this.fakeObjects.put("commerce", new Commerce(this));
+        this.fakeObjects.put("currency", new Currency(this));
+        this.fakeObjects.put("options", new Options(this));
+        this.fakeObjects.put("code", new Code(this));
+        this.fakeObjects.put("file", new File(this));
+        this.fakeObjects.put("finance", new Finance(this));
+        this.fakeObjects.put("food", new Food(this));
+        this.fakeObjects.put("gameOfThrones", new GameOfThrones(this));
+        this.fakeObjects.put("dateAndTime", new DateAndTime(this));
+        this.fakeObjects.put("demographic", new Demographic(this));
+        this.fakeObjects.put("dog", new Dog(this));
+        this.fakeObjects.put("educator", new Educator(this));
+        this.fakeObjects.put("shakespeare", new Shakespeare(this));
+        this.fakeObjects.put("slackEmoji", new SlackEmoji(this));
+        this.fakeObjects.put("space", new Space(this));
+        this.fakeObjects.put("bool", new Bool(this));
+        this.fakeObjects.put("beer", new Beer(this));
+        this.fakeObjects.put("university", new University(this));
+        this.fakeObjects.put("cat", new Cat(this));
+        this.fakeObjects.put("stock", new Stock(this));
+        this.fakeObjects.put("lordOfTheRings", new LordOfTheRings(this));
+        this.fakeObjects.put("zelda", new Zelda(this));
+        this.fakeObjects.put("harryPotter", new HarryPotter(this));
+        this.fakeObjects.put("rockBand", new RockBand(this));
+        this.fakeObjects.put("esports", new Esports(this));
+        this.fakeObjects.put("friends", new Friends(this));
+        this.fakeObjects.put("hipster", new Hipster(this));
+        this.fakeObjects.put("job", new Job(this));
+        this.fakeObjects.put("twinPeaks", new TwinPeaks(this));
+        this.fakeObjects.put("rickAndMorty", new RickAndMorty(this));
+        this.fakeObjects.put("yoda", new Yoda(this));
+        this.fakeObjects.put("matz", new Matz(this));
+        this.fakeObjects.put("witcher", new Witcher(this));
+        this.fakeObjects.put("dragonBall", new DragonBall(this));
+        this.fakeObjects.put("funnyName", new FunnyName(this));
+        this.fakeObjects.put("hitchhikersGuideToTheGalaxy", new HitchhikersGuideToTheGalaxy(this));
+        this.fakeObjects.put("hobbit", new Hobbit(this));
+        this.fakeObjects.put("howIMetYourMother", new HowIMetYourMother(this));
+        this.fakeObjects.put("leagueOfLegends", new LeagueOfLegends(this));
+        this.fakeObjects.put("overwatch", new Overwatch(this));
+        this.fakeObjects.put("robin", new Robin(this));
+        this.fakeObjects.put("starTrek", new StarTrek(this));
+        this.fakeObjects.put("weather", new Weather(this));
+        this.fakeObjects.put("lebowski", new Lebowski(this));
+        this.fakeObjects.put("medical", new Medical(this));
+        this.fakeObjects.put("country", new Country(this));
+    }
+
+
+    public <T> T getFakeObject(String fakeObjectName){
+        return (T) this.fakeObjects.get(fakeObjectName);
+    }
+
+    private void register(String key, Object value){
+        this.fakeObjects.put(key, value);
+    }
+
+    /**
+     * add fake fakeObjects
+     * @param fakeValuesInterface
+     */
+    private void addFakeValues(FakeValuesInterface fakeValuesInterface){
+        this.fakeValuesService.addFakeValues(fakeValuesInterface);
+    }
+
+
+    /**
+     * add {@Link FakeSeed}
+     * @param fakeSeed
+     */
+    public void addFakeSeed(FakeSeed fakeSeed){
+        FakeValuesInterface fakeValuesInterface = fakeSeed.getFakeValuesInterfaces();
+        Class<?> clazz = fakeSeed.getFakeClazz();
+
+        if(fakeValuesService != null){
+            this.addFakeValues(fakeValuesInterface);
+        }
+
+        if(clazz != null){
+            this.register(clazz.getSimpleName(), initFakeObject(clazz));
+        }
+    }
+
+    private Object initFakeObject(Class<?> clazz){
+        Object o = null;
+        try{
+            Constructor<?> constructor = clazz.getConstructor(getClass());
+            o = constructor.newInstance(this);
+        }catch (Exception e){
+            System.err.println(e.getLocalizedMessage());
+        }
+        return o;
     }
 
     /**
@@ -222,6 +209,8 @@ public class Faker {
     public String numerify(String numberString) {
         return fakeValuesService.numerify(numberString);
     }
+
+
 
     /**
      * Returns a string with the '?' characters in the parameter replaced with random alphabetic
@@ -285,7 +274,7 @@ public class Faker {
     }
 
     public Currency currency() {
-        return currency;
+        return getFakeObject("currency");
 
     }
 
@@ -293,269 +282,273 @@ public class Faker {
         return this.fakeValuesService;
     }
 
+    public AlphaNumeric alphaNumeric(){
+        return getFakeObject("alphaNumeric");
+    }
+
     public Ancient ancient() {
-        return ancient;
+        return getFakeObject("ancient");
     }
 
     public App app() {
-        return app;
+        return getFakeObject("app");
     }
 
     public Artist artist() {
-        return artist;
+        return getFakeObject("artist");
     }
 
     public Avatar avatar() {
-        return avatar;
+        return getFakeObject("avatar");
     }
 
     public Music music() {
-        return music;
+        return getFakeObject("music");
     }
 
     public Name name() {
-        return name;
+        return getFakeObject("name");
     }
 
     public Number number() {
-        return number;
+        return getFakeObject("number");
     }
 
     public Internet internet() {
-        return internet;
+        return getFakeObject("internet");
     }
 
     public PhoneNumber phoneNumber() {
-        return phoneNumber;
+        return getFakeObject("phoneNumber");
     }
 
     public Pokemon pokemon() {
-        return pokemon;
+        return getFakeObject("pokemon");
     }
 
     public Lorem lorem() {
-        return lorem;
+        return getFakeObject("lorem");
     }
 
     public Address address() {
-        return address;
+        return getFakeObject("address");
     }
 
     public Book book() {
-        return book;
+        return getFakeObject("book");
     }
 
     public Business business() {
-        return business;
+        return getFakeObject("business");
     }
 
     public ChuckNorris chuckNorris() {
-        return chuckNorris;
+        return getFakeObject("chuckNorris");
     }
 
     public Color color() {
-        return color;
+        return getFakeObject("color");
     }
 
     public Commerce commerce() {
-        return commerce;
+        return getFakeObject("commerce");
     }
 
     public Company company() {
-        return company;
+        return getFakeObject("company");
     }
 
     public Crypto crypto() {
-        return crypto;
+        return getFakeObject("crypto");
     }
 
     public Hacker hacker() {
-        return hacker;
+        return getFakeObject("hacker");
     }
 
     public IdNumber idNumber() {
-        return idNumber;
+        return getFakeObject("idNumber");
     }
 
     public Options options() {
-        return options;
+        return getFakeObject("options");
     }
 
     public Code code() {
-        return code;
+        return getFakeObject("code");
     }
 
     public File file() {
-        return file;
+        return getFakeObject("file");
     }
 
     public Finance finance() {
-        return finance;
+        return getFakeObject("finance");
     }
 
     public Food food() {
-        return food;
+        return getFakeObject("food");
     }
 
     public GameOfThrones gameOfThrones() {
-        return gameOfThrones;
+        return getFakeObject("gameOfThrones");
     }
 
     public DateAndTime date() {
-        return dateAndTime;
+        return getFakeObject("dateAndTime");
     }
 
     public Demographic demographic() {
-        return demographic;
+        return getFakeObject("demographic");
     }
 
     public Dog dog() {
-        return dog;
+        return getFakeObject("dog");
     }
 
     public Educator educator() {
-        return educator;
+        return getFakeObject("educator");
     }
 
     public SlackEmoji slackEmoji() {
-        return slackEmoji;
+        return getFakeObject("slackEmoji");
     }
 
     public Shakespeare shakespeare() {
-        return shakespeare;
+        return getFakeObject("shakespeare");
     }
 
     public Space space() {
-        return space;
+        return getFakeObject("space");
     }
 
     public Superhero superhero() {
-        return superhero;
+        return getFakeObject("superhero");
     }
 
     public Bool bool() {
-        return bool;
+        return getFakeObject("bool");
     }
 
     public Team team() {
-        return team;
+        return getFakeObject("team");
     }
 
     public Beer beer() {
-        return beer;
+        return getFakeObject("beer");
     }
 
     public University university() {
-        return university;
+        return getFakeObject("university");
     }
 
     public Cat cat() {
-        return cat;
+        return getFakeObject("cat");
     }
 
     public Stock stock() {
-        return stock;
+        return getFakeObject("stock");
     }
 
     public LordOfTheRings lordOfTheRings() {
-        return lordOfTheRings;
+        return getFakeObject("lordOfTheRings");
     }
 
     public Zelda zelda() {
-        return zelda;
+        return getFakeObject("zelda");
     }
 
     public HarryPotter harryPotter() {
-        return harryPotter;
+        return getFakeObject("harryPotter");
     }
 
     public RockBand rockBand() {
-        return rockBand;
+        return getFakeObject("rockBand");
     }
 
     public Esports esports() {
-        return esports;
+        return getFakeObject("esports");
     }
 
     public Friends friends() {
-        return friends;
+        return getFakeObject("friends");
     }
 
     public Hipster hipster() {
-        return hipster;
+        return getFakeObject("hipster");
     }
 
     public Job job() {
-        return job;
+        return getFakeObject("job");
     }
 
     public TwinPeaks twinPeaks() {
-        return twinPeaks;
+        return getFakeObject("twinPeaks");
     }
 
     public RickAndMorty rickAndMorty() {
-        return rickAndMorty;
+        return getFakeObject("rickAndMorty");
     }
 
     public Yoda yoda() {
-        return yoda;
+        return getFakeObject("yoda");
     }
 
     public Matz matz() {
-        return matz;
+        return getFakeObject("matz");
     }
 
     public Witcher witcher() {
-        return witcher;
+        return getFakeObject("witcher");
     }
 
     public DragonBall dragonBall() {
-        return dragonBall;
+        return getFakeObject("dragonBall");
     }
 
     public FunnyName funnyName() {
-        return funnyName;
+        return getFakeObject("funnyName");
     }
 
     public HitchhikersGuideToTheGalaxy hitchhikersGuideToTheGalaxy() {
-        return hitchhikersGuideToTheGalaxy;
+        return getFakeObject("hitchhikersGuideToTheGalaxy");
     }
 
     public Hobbit hobbit() {
-        return hobbit;
+        return getFakeObject("hobbit");
     }
 
     public HowIMetYourMother howIMetYourMother() {
-        return howIMetYourMother;
+        return getFakeObject("howIMetYourMother");
     }
 
     public LeagueOfLegends leagueOfLegends() {
-        return leagueOfLegends;
+        return getFakeObject("leagueOfLegends");
     }
 
     public Overwatch overwatch() {
-        return overwatch;
+        return getFakeObject("overwatch");
     }
 
     public Robin robin() {
-        return robin;
+        return getFakeObject("robin");
     }
 
     public StarTrek starTrek() {
-        return starTrek;
+        return getFakeObject("starTrek");
     }
 
     public Weather weather() {
-        return weather;
+        return getFakeObject("weather");
     }
 
     public Lebowski lebowski() {
-        return lebowski;
+        return getFakeObject("lebowski");
     }
 
-    public Medical medical(){return medical;}
+    public Medical medical(){return getFakeObject("medical;");}
 
-    public Country country(){ return country;}
+    public Country country(){ return getFakeObject("country;");}
 
     public String resolve(String key) {
         return this.fakeValuesService.resolve(key, this, this);

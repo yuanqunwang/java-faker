@@ -1,6 +1,7 @@
 package com.github.javafaker.service;
 
 import com.github.javafaker.Address;
+import com.github.javafaker.AlphaNumeric;
 import com.github.javafaker.Faker;
 import com.github.javafaker.Name;
 import com.github.javafaker.service.files.EnFile;
@@ -30,6 +31,7 @@ public class FakeValuesService {
 
     private final List<FakeValuesInterface> fakeValuesList;
     private final RandomService randomService;
+    private final AlphaNumeric alphaNumeric;
 
     /**
      * <p>
@@ -58,6 +60,7 @@ public class FakeValuesService {
             throw new IllegalArgumentException("locale is required");
         }
         this.randomService = randomService;
+        this.alphaNumeric = new AlphaNumeric(this.randomService);
         locale = normalizeLocale(locale);
 
         final List<Locale> locales = localeChain(locale);
@@ -115,6 +118,39 @@ public class FakeValuesService {
         } else {
             return new Locale(parts[0], parts[1]);
         }
+    }
+
+    /**
+     * add fake values
+     * @param valuesInterface
+     */
+    public void addFakeValues(FakeValuesInterface valuesInterface){
+        fakeValuesList.add(valuesInterface);
+    }
+
+
+    public String numerify(String numberString){
+        return this.alphaNumeric.numerify(numberString);
+    }
+
+    public String bothify(String string){
+        return this.alphaNumeric.bothify(string);
+    }
+
+    public String bothify(String string, boolean isUpper){
+        return this.alphaNumeric.bothify(string, isUpper);
+    }
+
+    public String letterify(String letterString){
+        return this.alphaNumeric.letterify(letterString);
+    }
+
+    public String letterify(String letterString, boolean isUpper){
+        return this.alphaNumeric.letterify(letterString, isUpper);
+    }
+
+    public String regexify(String regex){
+        return this.alphaNumeric.regexify(regex);
     }
 
     /**
@@ -199,99 +235,6 @@ public class FakeValuesService {
             }
         }
         return result;
-    }
-
-    /**
-     * Returns a string with the '#' characters in the parameter replaced with random digits between 0-9 inclusive.
-     * <p/>
-     * For example, the string "ABC##EFG" could be replaced with a string like "ABC99EFG".
-     *
-     * @param numberString
-     * @return
-     */
-    public String numerify(String numberString) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < numberString.length(); i++) {
-            if (numberString.charAt(i) == '#') {
-                sb.append(randomService.nextInt(10));
-            } else {
-                sb.append(numberString.charAt(i));
-            }
-        }
-
-        return sb.toString();
-    }
-
-    /**
-     * Applies both a {@link #numerify(String)} and a {@link #letterify(String)}
-     * over the incoming string.
-     *
-     * @param string
-     * @return
-     */
-    public String bothify(String string) {
-        return letterify(numerify(string));
-    }
-
-    /**
-     * Applies both a {@link #numerify(String)} and a {@link #letterify(String, boolean)}
-     * over the incoming string.
-     *
-     * @param string
-     * @param isUpper
-     * @return
-     */
-    public String bothify(String string, boolean isUpper) {
-        return letterify(numerify(string), isUpper);
-    }
-
-    /**
-     * Generates a String that matches the given regular expression.
-     */
-    public String regexify(String regex) {
-        Generex generex = new Generex(regex);
-        generex.setSeed(randomService.nextLong());
-        return generex.random();
-    }
-
-    /**
-     * Returns a string with the '?' characters in the parameter replaced with random alphabetic
-     * characters.
-     * <p/>
-     * For example, the string "12??34" could be replaced with a string like "12AB34".
-     *
-     * @param letterString
-     * @return
-     */
-    public String letterify(String letterString) {
-        return this.letterify(letterString, false);
-    }
-
-    /**
-     * Returns a string with the '?' characters in the parameter replaced with random alphabetic
-     * characters.
-     * <p/>
-     * For example, the string "12??34" could be replaced with a string like "12AB34".
-     *
-     * @param letterString
-     * @param isUpper      specifies whether or not letters should be upper case
-     * @return
-     */
-    public String letterify(String letterString, boolean isUpper) {
-        return letterHelper((isUpper) ? 65 : 97, letterString); // from ascii table
-    }
-
-    private String letterHelper(int baseChar, String letterString) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < letterString.length(); i++) {
-            if (letterString.charAt(i) == '?') {
-                sb.append((char) (baseChar + randomService.nextInt(26))); // a-z
-            } else {
-                sb.append(letterString.charAt(i));
-            }
-        }
-
-        return sb.toString();
     }
 
     /**
@@ -489,12 +432,13 @@ public class FakeValuesService {
 
         try {
             String fakerMethodName = classAndMethod[0].replaceAll("_", "");
-            MethodAndCoercedArgs fakerAccessor = accessor(faker, fakerMethodName, Collections.<String>emptyList());
-            if (fakerAccessor == null) {
-                log.fine("Can't find top level faker object named " + fakerMethodName + ".");
-                return null;
-            }
-            Object objectWithMethodToInvoke = fakerAccessor.invoke(faker);
+//            MethodAndCoercedArgs fakerAccessor = accessor(faker, fakerMethodName, Collections.<String>emptyList());
+//            if (fakerAccessor == null) {
+//                log.fine("Can't find top level faker object named " + fakerMethodName + ".");
+//                return null;
+//            }
+//            Object objectWithMethodToInvoke = fakerAccessor.invoke(faker);
+            Object objectWithMethodToInvoke = faker.getFakeObject(fakerMethodName);
             String nestedMethodName = classAndMethod[1].replaceAll("_", "");
             final MethodAndCoercedArgs accessor = accessor(objectWithMethodToInvoke, classAndMethod[1].replaceAll("_", ""), args);
             if (accessor == null) {
