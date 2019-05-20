@@ -46,6 +46,7 @@ public class Faker {
     private void init(){
         this.fakeObjects.put("alphaNumeric", new AlphaNumeric(randomService));
         this.fakeObjects.put("app", new App(this));
+        this.fakeObjects.put("ancient", new Ancient(this));
         this.fakeObjects.put("artist", new Artist(this));
         this.fakeObjects.put("avatar", new Avatar(this));
         this.fakeObjects.put("lorem", new Lorem(this));
@@ -110,11 +111,20 @@ public class Faker {
         this.fakeObjects.put("lebowski", new Lebowski(this));
         this.fakeObjects.put("medical", new Medical(this));
         this.fakeObjects.put("country", new Country(this));
+        this.fakeObjects.put("superhero", new Superhero(this));
+        this.fakeObjects.put("team", new Team(this));
     }
 
 
     public <T> T getFakeObject(String fakeObjectName){
-        return (T) this.fakeObjects.get(fakeObjectName);
+//        fakeObjectName = fakeObjectName.substring(0, fakeObjectName.length()-1);
+        Object object = this.fakeObjects.get(fakeObjectName);
+        if(object == null){
+            char firstChar = fakeObjectName.charAt(0);
+            fakeObjectName = fakeObjectName.replaceFirst("([A-Z])", String.valueOf(firstChar).toLowerCase());
+            object = this.fakeObjects.get(fakeObjectName);
+        }
+        return (T) object;
     }
 
     private void register(String key, Object value){
@@ -546,9 +556,9 @@ public class Faker {
         return getFakeObject("lebowski");
     }
 
-    public Medical medical(){return getFakeObject("medical;");}
+    public Medical medical(){return getFakeObject("medical");}
 
-    public Country country(){ return getFakeObject("country;");}
+    public Country country(){ return getFakeObject("country");}
 
     public String resolve(String key) {
         return this.fakeValuesService.resolve(key, this, this);

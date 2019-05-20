@@ -79,7 +79,7 @@ public class FakeValuesService {
             }
         }
 
-        this.fakeValuesList = Collections.unmodifiableList(all);
+        this.fakeValuesList = all;
     }
 
     /**
@@ -432,13 +432,12 @@ public class FakeValuesService {
 
         try {
             String fakerMethodName = classAndMethod[0].replaceAll("_", "");
-//            MethodAndCoercedArgs fakerAccessor = accessor(faker, fakerMethodName, Collections.<String>emptyList());
-//            if (fakerAccessor == null) {
-//                log.fine("Can't find top level faker object named " + fakerMethodName + ".");
-//                return null;
-//            }
-//            Object objectWithMethodToInvoke = fakerAccessor.invoke(faker);
             Object objectWithMethodToInvoke = faker.getFakeObject(fakerMethodName);
+            if (objectWithMethodToInvoke == null) {
+                log.fine("Can't find top level faker object named " + fakerMethodName + ".");
+                return null;
+            }
+
             String nestedMethodName = classAndMethod[1].replaceAll("_", "");
             final MethodAndCoercedArgs accessor = accessor(objectWithMethodToInvoke, classAndMethod[1].replaceAll("_", ""), args);
             if (accessor == null) {
